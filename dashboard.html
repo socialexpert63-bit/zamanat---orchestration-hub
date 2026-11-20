@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Zamanat Orchestration Hub</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+  /* Layout: fixed navy sidebar + ivory workspace, mandate selector in top bar, one module per view */
+  --navy:#0b1730;--navy2:#13244a;--side-fg:#c9d3e6;--side-mute:#7f8fb0;
+  --bg:#f3f1ea;--surface:#fbfaf6;--surface2:#ecebe3;--fg:#14203a;--mute:#5d6882;--line:#dcdacf;
+  --em:#0f7a5c;--em-soft:#d7eee5;--gold:#a98532;--gold-soft:#f1e8cf;
+  --warn:#b4531a;--warn-soft:#f7e2d2;--bad:#a8323a;--bad-soft:#f5d9db;--info:#2f5d9e;--info-soft:#dbe6f6;
+  --shadow:0 1px 2px rgba(11,23,48,.06),0 6px 18px rgba(11,23,48,.05);
+  --font:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --navy:#070f20;--navy2:#0f1d3d;--bg:#0c1426;--surface:#131d35;--surface2:#1a2744;--fg:#e8ecf5;--mute:#98a4bf;--line:#26335a;
+  --em:#3cc79c;--em-soft:#12392f;--gold:#d3ae5a;--gold-soft:#35301c;--warn:#f0a066;--warn-soft:#3a2617;--bad:#f08a92;--bad-soft:#3b1b1f;--info:#8db4ee;--info-soft:#172a4a;
+  --shadow:0 1px 2px rgba(0,0,0,.3);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --navy:#070f20;--navy2:#0f1d3d;--bg:#0c1426;--surface:#131d35;--surface2:#1a2744;--fg:#e8ecf5;--mute:#98a4bf;--line:#26335a;
+  --em:#3cc79c;--em-soft:#12392f;--gold:#d3ae5a;--gold-soft:#35301c;--warn:#f0a066;--warn-soft:#3a2617;--bad:#f08a92;--bad-soft:#3b1b1f;--info:#8db4ee;--info-soft:#172a4a;
+  --shadow:0 1px 2px rgba(0,0,0,.3);color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
+aside{background:var(--navy);color:var(--side-fg);padding:18px 12px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{padding:4px 10px 16px}
+.brand b{display:block;font-size:19px;letter-spacing:.28em;color:#fff;font-weight:800}
+.brand span{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.navg{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--side-mute);padding:14px 10px 6px}
+.nav{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;color:var(--side-fg);padding:8px 10px;border-radius:7px;cursor:pointer;font-weight:500;transition:background .2s,transform .2s}
+.nav:hover{background:var(--navy2);transform:translateX(2px)}
+.nav.on{background:var(--navy2);color:#fff;box-shadow:inset 3px 0 0 var(--gold)}
+.nav i{font-style:normal;width:18px;text-align:center;opacity:.8}
+main{min-width:0}
+.top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 24px;border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:5}
+.top .grow{flex:1;min-width:140px}
+.demo{background:var(--gold-soft);color:var(--fg);border-bottom:1px solid var(--line);padding:7px 24px;font-size:12px}
+.demo b{color:var(--gold)}
+.view{padding:22px 24px 48px;max-width:1280px;animation:rise .35s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+h1{font-size:24px;margin:0 0 4px;letter-spacing:-.01em;text-wrap:balance}
+h2{font-size:15px;margin:0 0 10px}
+h3{font-size:13px;margin:0 0 6px}
+.sub{color:var(--mute);margin:0 0 18px;max-width:72ch}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}
+.g5{grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;box-shadow:var(--shadow);min-width:0}
+.card.click{cursor:pointer;transition:transform .2s,border-color .2s}
+.card.click:hover{transform:translateY(-2px);border-color:var(--em)}
+.stag>*{animation:rise .4s ease both}
+.stag>*:nth-child(2){animation-delay:.05s}.stag>*:nth-child(3){animation-delay:.1s}.stag>*:nth-child(4){animation-delay:.15s}.stag>*:nth-child(5){animation-delay:.2s}
+.kpi .n{font-size:28px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--mute)}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.t-ok{background:var(--em-soft);color:var(--em)}.t-warn{background:var(--warn-soft);color:var(--warn)}.t-bad{background:var(--bad-soft);color:var(--bad)}.t-info{background:var(--info-soft);color:var(--info)}.t-mute{background:var(--surface2);color:var(--mute)}.t-gold{background:var(--gold-soft);color:var(--gold)}
+.btn{background:var(--navy2);color:#fff;border:0;padding:8px 14px;border-radius:7px;cursor:pointer;font-weight:600;transition:opacity .2s,transform .15s}
+.btn:hover{opacity:.9}.btn:active{transform:scale(.98)}
+.btn.em{background:var(--em);color:#fff}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn.sm{padding:4px 10px;font-size:12px}
+input,select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:8px 10px;width:100%;min-width:0}
+textarea{min-height:70px;resize:vertical}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--em);outline-offset:1px}
+label{display:block;font-size:12px;font-weight:600;color:var(--mute);margin:0 0 4px}
+.f{margin-bottom:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row>*{min-width:0}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.clk{cursor:pointer}tr.clk:hover td{background:var(--surface2)}
+td select{padding:4px 6px;font-size:12.5px}
+.bar{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--em);border-radius:99px;transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.warnbox{background:var(--warn-soft);border:1px solid var(--warn);color:var(--fg);border-radius:8px;padding:10px 12px;font-size:12.5px;margin-bottom:14px}
+.warnbox b{color:var(--warn)}
+.tl{display:flex;gap:0;overflow-x:auto;padding:6px 2px 12px}
+.st{flex:1 0 96px;text-align:center;cursor:pointer;position:relative;padding:0 4px;background:none;border:0}
+.st .dot{width:26px;height:26px;border-radius:50%;margin:0 auto 6px;display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--surface2);color:var(--mute);border:2px solid var(--line);position:relative;z-index:1;transition:all .3s}
+.st.done .dot{background:var(--em);border-color:var(--em);color:#fff}
+.st.cur .dot{border-color:var(--gold);color:var(--gold);background:var(--gold-soft);animation:pulse 2s infinite}
+.st.sel .dot{box-shadow:0 0 0 4px var(--info-soft)}
+.st::before{content:"";position:absolute;top:13px;left:-50%;width:100%;height:2px;background:var(--line)}
+.st.done::before,.st.cur::before{background:var(--em)}
+.st:first-child::before{display:none}
+.st small{display:block;font-size:11px;line-height:1.25;color:var(--mute)}
+.st.sel small{color:var(--fg);font-weight:700}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(169,133,50,.4)}50%{box-shadow:0 0 0 6px rgba(169,133,50,0)}}
+.hist{border-left:2px solid var(--line);margin-left:6px;padding-left:14px}
+.hist div{position:relative;margin-bottom:12px}
+.hist div::before{content:"";position:absolute;left:-20px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--em);border:2px solid var(--surface)}
+.hist small{color:var(--mute)}
+.mute{color:var(--mute)}.small{font-size:12px}
+.toast{position:fixed;right:16px;bottom:16px;background:var(--navy2);color:#fff;padding:10px 14px;border-radius:8px;box-shadow:var(--shadow);z-index:30;animation:rise .3s ease;max-width:320px}
+.chat{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow:auto;padding:4px}
+.msg{padding:10px 12px;border-radius:10px;max-width:88%;white-space:pre-wrap}
+.msg.u{background:var(--navy2);color:#fff;align-self:flex-end}
+.msg.a{background:var(--surface2);align-self:flex-start}
+.typing span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--mute);margin-right:3px;animation:bl 1s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bl{0%,100%{opacity:.25}50%{opacity:1}}
+.steps{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.steps span{flex:1 0 70px;font-size:11px;text-align:center;padding:6px 4px;border-radius:6px;background:var(--surface2);color:var(--mute);font-weight:600}
+.steps span.on{background:var(--em);color:#fff}.steps span.done{background:var(--em-soft);color:var(--em)}
+.node{cursor:pointer}
+.node:hover rect,.node:hover circle{stroke:var(--em)}
+.flow{stroke-dasharray:5 5;animation:dash 1.2s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-20}}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:5px 12px;cursor:pointer;font-size:12.5px}
+.chip.on{background:var(--navy2);color:#fff;border-color:var(--navy2)}
+.skel{background:linear-gradient(90deg,var(--surface2),var(--surface),var(--surface2));background-size:200% 100%;animation:sh 1.1s infinite;border-radius:8px;height:90px}
+@keyframes sh{to{background-position:-200% 0}}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  aside{position:static;height:auto;display:flex;overflow-x:auto;gap:2px;padding:8px}
+  .brand,.navg{display:none}
+  .nav{white-space:nowrap;width:auto;flex:0 0 auto}
+  .top,.view,.demo{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+body{padding-left:0;padding-right:0}
+html,body{margin:0}</style>
+</head>
+<body>
+
+
+<div class="app">
+  <aside id="side"></aside>
+  <main>
+    <div class="demo"><b>Prototype concept.</b> All mandates, partners, documents and figures are fictional demonstration data. Zamanat coordinates licensed partners; it is not a custodian, fund manager, adviser or distribution venue. Nothing here issues tokens, executes trades or takes subscriptions, and no product is shown as Shariah-approved or regulator-approved without recorded evidence from the authorised party.</div>
+    <div class="top">
+      <strong id="crumb" class="grow"></strong>
+      <div class="row"><label for="gsel" style="margin:0">Mandate</label><select id="gsel" style="width:auto;max-width:260px"></select></div>
+      <input id="gsearch" placeholder="Search mandates, documents, partners" style="width:240px;max-width:100%">
+      <button class="btn ghost sm" data-act="bell" aria-label="Notifications">Alerts <span class="pill t-warn" id="bellN">0</span></button>
+      <a class="btn ghost sm" href="index.html" style="text-decoration:none;color:inherit">Website</a> <button class="btn ghost sm" data-act="theme">Theme</button>
+    </div>
+    <div id="view" class="view"></div>
+  </main>
+</div>
+<div id="toasts"></div>
+
+<script>
+const STAGES=['Initial Consultation','Asset & Mandate Assessment','Strategic Alignment','Product Structuring','Shariah Review','Legal & Regulatory','Technology & Tokenization','Fund Admin & Custody','Distribution Readiness','Onboarding & Lifecycle'];
+const WS=['Asset Assessment','Commercial Structure','Legal Structure','Financial Modelling Coordination','Shariah Structuring','Regulatory Pathway','Technology Architecture','Fund Administration','Custody Arrangements','Distribution Planning'];
+const WSCAT=['Asset Originator','Legal Firm','Legal Firm','Fund Administrator','Shariah Advisor','Regulatory Specialist','Tokenization Provider','Fund Administrator','Custodian','Distribution Partner'];
+const WST=['Not Started','In Progress','With Specialist','In Review','Completed by Owner'];
+const SHS=['Not Started','Documents Required','Under Review','Comments Received','Awaiting Revision','Completed by Advisor'];
+const RGS=['Not Started','In Preparation','With External Counsel','Awaiting Documentation','Review in Progress','Completed by Responsible Party'];
+const CATS=['Shariah Advisor','Legal Firm','Regulatory Specialist','Tokenization Provider','Custodian','Fund Administrator','Distribution Partner','Asset Originator'];
+const DOCCATS=['Asset Documents','Product Structuring','Legal Documentation','Shariah Review','Regulatory Documentation','Technology Documentation','Custody','Fund Administration','Distribution'];
+const DISTI=['Product documentation','Legal documentation','Regulatory review status','Shariah review status (where applicable)','Custody arrangements','Fund administration arrangements','Technology readiness','Distribution partner coordination','Investor onboarding documentation','Reporting requirements'];
+const TECH=[['Underlying Asset','Asset & product information'],['Product Structure','Legal structure dependencies'],['Legal Framework','Token design requirements'],['Tokenization Provider','Technical documentation'],['Custody Infrastructure','Custody integration coordination'],['Distribution Integration','Whitelisting and transfer restriction requirements'],['Reporting & Monitoring','Reporting, recordkeeping, testing, deployment readiness']];
+const TECHS=['Not Started','Scoping','In Progress','Testing (sandbox only)','Ready for partner review'];
+
+const P=[
+ ['Northgate Shariah Advisory','Shariah Advisor','DIFC, ADGM','Islamic structures, sukuk'],
+ ['Halden & Rowe LLP','Legal Firm','DIFC, UK','Fund and securities law'],
+ ['Crestline Counsel','Legal Firm','ADGM','Private credit documentation'],
+ ['Verity Regulatory Partners','Regulatory Specialist','DIFC, ADGM','Licensing pathways'],
+ ['Lumen Ledger Tech','Tokenization Provider','Global','Token design, transfer rules'],
+ ['Bastion Custody Co.','Custodian','DIFC','Institutional custody'],
+ ['Pinecrest Fund Services','Fund Administrator','ADGM, Cayman','NAV, registry, reporting'],
+ ['Orchard Distribution','Distribution Partner','GCC','Institutional distribution'],
+ ['Meridian Trade Holdings','Asset Originator','Singapore','Trade receivables'],
+ ['Harbor Leasing Group','Asset Originator','UAE','Equipment leasing'],
+ ['Sable Regulatory Advisory','Regulatory Specialist','Cayman, UK','Cross-border filings'],
+ ['Kestrel Chain Systems','Tokenization Provider','Global','Registry integration']
+].map((p,i)=>({id:'P'+(i+1),name:p[0],cat:p[1],jur:p[2],spec:p[3],status:i%5==4?'Onboarding':'Engaged (sample)',contact:'Sample contact '+(i+1)}));
+
+const MD=[
+ ['M-101','Meridian Trade Finance Note','Trade Finance','Meridian Trade Holdings','DIFC',4,'Aisha R.','Illustrative USD 40m, 18 months'],
+ ['M-102','Harbor Asset Leasing Programme','Asset Leasing','Harbor Leasing Group','ADGM',5,'Omar K.','Illustrative USD 75m, 5 years'],
+ ['M-103','Crescent Private Credit Fund I','Private Credit','Crescent Capital (sample)','DIFC',3,'Aisha R.','Illustrative USD 120m, 7 years'],
+ ['M-104','Al-Noor Logistics Sukuk','Sukuk','Al-Noor Logistics (sample)','ADGM',2,'Layla S.','Illustrative USD 200m, 5 years'],
+ ['M-105','Lakeshore Real Estate Income','Real Estate','Lakeshore Holdings (sample)','DIFC',7,'Omar K.','Illustrative USD 60m, 10 years'],
+ ['M-106','Atlas Growth Equity Sleeve','Private Equity','Atlas Partners (sample)','Cayman',1,'Layla S.','Illustrative USD 90m, 8 years']
+];
+let S={};
+function seed(){
+  S.mandates=MD.map((m,i)=>{
+    const st=m[5];
+    return {id:m[0],name:m[1],cat:m[2],org:m[3],jur:m[4],stage:st,mgr:m[6],size:m[7],upd:'2026-11-'+(10+i),struct:m[2]=='Sukuk'||m[2]=='Trade Finance'||m[2]=='Asset Leasing'?'Shariah-aligned structure being explored':'Conventional structure being explored',
+      ws:WS.map((w,k)=>({n:w,st:k<st-1?4:k==st-1?3:k==st?1:0,partner:null})),
+      sh:{st:st<3?0:st==3?1:st==4?2:st>=5?3:0,advisor:'Northgate Shariah Advisory',indep:st>=3,obs:st>=4?[{t:'Clarify asset ownership transfer sequence',open:true},{t:'Provide late-payment treatment wording',open:false}]:[],decision:'',decBy:''},
+      reg:[['Product term sheet','Legal Firm',1],['Jurisdiction pathway memo','Regulatory Specialist',st>=5?4:1],['Offering document draft','Legal Firm',st>=5?2:0],['Corporate authorisations','Asset Originator',st>=5?3:0]].map((r,k)=>({doc:r[0],party:r[1],st:r[2],ver:'v0.'+(k+1),date:'2026-12-'+(5+k*4),note:''})),
+      dist:DISTI.map((d,k)=>({n:d,done:k<Math.max(0,st-5),ev:k<Math.max(0,st-5)?'Evidence on file (demo)':'',target:'2027-0'+(1+k%6)+'-15'})),
+      tech:TECH.map((t,k)=>k<st-5?3:k==st-5?2:0),
+      decisions:[{d:'2026-11-0'+(i+2),t:'Proceed to '+STAGES[Math.min(st,9)]+' workstream',by:m[6]}]};
+  });
+  S.assign=[{mid:'M-101',ws:'Shariah Structuring',partner:'P1',due:'2026-12-10',st:'In Progress',deliv:'Advisor comments on structure v2'},{mid:'M-102',ws:'Regulatory Pathway',partner:'P4',due:'2026-12-18',st:'In Progress',deliv:'Pathway memo'},{mid:'M-105',ws:'Custody Arrangements',partner:'P6',due:'2026-12-05',st:'Not Started',deliv:'Custody term outline'},{mid:'M-103',ws:'Legal Structure',partner:'P3',due:'2026-12-14',st:'In Progress',deliv:'Fund documents outline'}];
+  S.docs=[['Trade receivable schedule (demo)','Asset Documents','M-101','Under review','Aisha R.'],['Structure paper v2 (demo)','Product Structuring','M-101','Under review','Aisha R.'],['Advisor observations log (demo)','Shariah Review','M-101','Comments received','Northgate'],['Lease portfolio summary (demo)','Asset Documents','M-102','Complete','Omar K.'],['Pathway memo draft (demo)','Regulatory Documentation','M-102','In preparation','Verity'],['Token design brief (demo)','Technology Documentation','M-105','Draft','Lumen Ledger'],['Custody term outline (demo)','Custody','M-105','Draft','Bastion'],['Fund admin scope (demo)','Fund Administration','M-103','Draft','Pinecrest'],['Distribution plan (demo)','Distribution','M-105','Draft','Orchard']].map((d,i)=>({id:i,name:d[0],cat:d[1],mid:d[2],st:d[3],owner:d[4],upd:'2026-11-1'+(i%9),vers:['v1','v2'].slice(0,1+(i%2)),acc:'Internal + assigned partners'}));
+  S.ms=[['M-101','Shariah advisor comments due','2026-11-27'],['M-102','Regulatory pathway memo review','2026-12-04'],['M-105','Custody term outline sign-off','2026-12-05'],['M-103','Fund documents outline','2026-12-14'],['M-104','Strategic alignment workshop','2026-12-02'],['M-106','Asset assessment kickoff','2026-12-09']].map((m,i)=>({id:i,mid:m[0],t:m[1],d:m[2],done:false}));
+  S.audit=[];S.draft=null;S.sel='M-101';S.view='dash';S.stageSel=null;S.msgs=[];S.step=0;S.form={};S.filter=null;S.pcat='All';S.dcat='All';S.node=null;S.techSel=0;S.rep={mid:'All',cat:'All',per:'Last 30 days'};S.q='';S.alerts=3;
+  [['Stage updated','M-102','Regulatory coordination started','Product Structuring','Legal & Regulatory'],['Document added','M-101','Structure paper v2 (demo)','','v2'],['Review comment','M-101','Advisor observation logged','','Open'],['Partner assigned','M-105','Bastion Custody Co. (sample)','','Assigned']].forEach((a,i)=>S.audit.push({t:a[0],mid:a[1],c:a[2],from:a[3],to:a[4],u:'Demo user',at:'2026-11-1'+(5+i)+' 09:'+(10+i*7)}));
+}
+seed();
+const M=()=>S.mandates.find(m=>m.id==S.sel);
+const mid=id=>S.mandates.find(m=>m.id==id);
+const pn=id=>(P.find(p=>p.id==id)||{}).name||'-';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const now=()=>{const d=new Date();return d.toISOString().slice(0,10)+' '+d.toTimeString().slice(0,5)};
+function log(t,m,c,from,to){S.audit.unshift({t,mid:m,c,from:from||'',to:to||'',u:'You (demo)',at:now()});}
+function toast(m){const e=document.createElement('div');e.className='toast';e.textContent=m;document.getElementById('toasts').appendChild(e);setTimeout(()=>e.remove(),2600)}
+const tone=s=>/Completed|Complete|Engaged|ok/.test(s)?'t-ok':/Not Started|Draft/.test(s)?'t-mute':/Awaiting|Required|Comments|Revision|Onboarding/.test(s)?'t-warn':'t-info';
+const pill=s=>'<span class="pill '+tone(s)+'">'+esc(s)+'</span>';
+const opts=(a,v)=>a.map(x=>'<option'+(x==v?' selected':'')+'>'+esc(x)+'</option>').join('');
+const prog=m=>Math.round(m.dist.filter(d=>d.done).length/m.dist.length*100);
+const wsprog=m=>Math.round(m.ws.reduce((a,w)=>a+w.st,0)/(m.ws.length*4)*100);
+
+/* ---------- charts ---------- */
+function bars(data,act,h=150){
+  const mx=Math.max(1,...data.map(d=>d[1])),w=100/data.length;
+  return '<svg viewBox="0 0 400 '+(h+34)+'" style="width:100%" role="img">'+data.map((d,i)=>{const bh=d[1]/mx*h;const x=i*(400/data.length)+6,bw=400/data.length-12;
+   return '<g class="node" data-act="'+act+'" data-v="'+esc(d[0])+'"><rect x="'+x+'" y="'+(h-bh+16)+'" width="'+bw+'" height="'+bh+'" rx="4" fill="var(--em)" opacity="'+(d[2]?1:.85)+'"><animate attributeName="height" from="0" to="'+bh+'" dur=".6s"/><animate attributeName="y" from="'+(h+16)+'" to="'+(h-bh+16)+'" dur=".6s"/></rect><text x="'+(x+bw/2)+'" y="'+(h-bh+11)+'" text-anchor="middle" font-size="11" fill="var(--fg)" font-weight="700">'+d[1]+'</text><text x="'+(x+bw/2)+'" y="'+(h+30)+'" text-anchor="middle" font-size="9" fill="var(--mute)">'+esc(d[0])+'</text></g>'}).join('')+'</svg>';
+}
+function donut(data){
+  const tot=data.reduce((a,d)=>a+d[1],0),cols=['var(--em)','var(--gold)','var(--info)','var(--warn)','var(--navy2)','var(--mute)'];let off=0;const R=42,C=2*Math.PI*R;
+  return '<div class="row"><svg viewBox="0 0 110 110" width="130" height="130"><g transform="rotate(-90 55 55)">'+data.map((d,i)=>{const l=d[1]/tot*C;const s='<circle cx="55" cy="55" r="'+R+'" fill="none" stroke="'+cols[i%6]+'" stroke-width="16" stroke-dasharray="'+l+' '+(C-l)+'" stroke-dashoffset="'+(-off)+'"/>';off+=l;return s}).join('')+'</g><text x="55" y="59" text-anchor="middle" font-size="16" font-weight="800" fill="var(--fg)">'+tot+'</text></svg><div class="small">'+data.map((d,i)=>'<div><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+cols[i%6]+'"></span> '+esc(d[0])+' <b>'+d[1]+'</b></div>').join('')+'</div></div>';
+}
+function lifecycle(m,act){
+  return '<div class="tl">'+STAGES.map((s,i)=>'<button class="st '+(i<m.stage?'done':i==m.stage?'cur':'')+(S.stageSel===i?' sel':'')+'" data-act="'+act+'" data-v="'+i+'"><span class="dot">'+(i<m.stage?'&#10003;':i+1)+'</span><small>'+esc(s)+'</small></button>').join('')+'</div>';
+}
+
+/* ---------- views ---------- */
+const V={};
+V.dash=()=>{
+  const ms=S.mandates;
+  const cnt=STAGES.map((s,i)=>[s.split(' ')[0].replace('&','').slice(0,8)||'S'+i,ms.filter(m=>m.stage==i).length]);
+  const cats={};ms.forEach(m=>cats[m.cat]=(cats[m.cat]||0)+1);
+  const pend=ms.filter(m=>m.sh.st<5&&m.sh.st>0).length;
+  return '<h1>Executive Dashboard</h1><p class="sub">One view of every mandate, who is working on it, and what is waiting on a specialist. Welcome back, Admin. Today is '+new Date().toDateString()+'.</p>'+
+  '<div class="grid g5 stag">'+[['Active mandates',ms.length,'mandates'],['Under structuring',ms.filter(m=>m.stage>=3&&m.stage<=4).length,'struct'],['Reviews pending',pend,'shariah'],['Partner tasks open',S.assign.filter(a=>a.st!='Completed').length,'partners'],['Avg readiness checklist',Math.round(ms.reduce((a,m)=>a+prog(m),0)/ms.length)+'%','dist']].map(k=>'<div class="card click kpi" data-act="go" data-v="'+k[2]+'"><div class="n">'+k[1]+'</div><div class="l">'+k[0]+'</div></div>').join('')+'</div><br>'+
+  '<div class="card"><h2>Mandate lifecycle (selected: '+esc(M().name)+')</h2>'+lifecycle(M(),'dstage')+'<div class="small mute">Select a stage to open the mandate workspace at that stage.</div></div><br>'+
+  '<div class="grid g2"><div class="card"><h2>Mandate pipeline by stage</h2>'+bars(cnt,'pipe')+'<div class="small mute">Stages 1 to 10, left to right. Click a bar to list mandates at that stage.</div></div>'+
+  '<div class="card"><h2>Product portfolio</h2>'+donut(Object.entries(cats))+'</div></div><br>'+
+  '<div class="grid g2"><div class="card"><h2>Shariah review overview</h2>'+S.mandates.filter(m=>m.sh.st>0).map(m=>'<div class="row" style="justify-content:space-between;margin-bottom:6px"><span>'+esc(m.name)+'</span>'+pill(SHS[m.sh.st])+'</div>').join('')+'<div class="small mute">Outstanding observations: '+ms.reduce((a,m)=>a+m.sh.obs.filter(o=>o.open).length,0)+'</div></div>'+
+  '<div class="card"><h2>Regulatory coordination</h2><div class="tw"><table><tr><th>Mandate</th><th>Jurisdiction</th><th>Responsible</th><th>Status</th></tr>'+ms.slice(0,5).map(m=>{const r=m.reg[1];return '<tr><td>'+esc(m.id)+'</td><td>'+esc(m.jur)+'</td><td>'+esc(r.party)+'</td><td>'+pill(RGS[r.st])+'</td></tr>'}).join('')+'</table></div></div></div><br>'+
+  '<div class="grid g3"><div class="card"><h2>Partner activity</h2>'+S.assign.slice(0,4).map(a=>'<div class="small" style="margin-bottom:6px"><b>'+esc(pn(a.partner))+'</b><br><span class="mute">'+esc(a.ws)+' · '+esc(a.mid)+' · due '+a.due+'</span></div>').join('')+'</div>'+
+  '<div class="card"><h2>Recent decisions</h2>'+ms.slice(0,4).map(m=>'<div class="small" style="margin-bottom:6px">'+esc(m.decisions[0].t)+'<br><span class="mute">'+m.decisions[0].d+' · '+esc(m.decisions[0].by)+'</span></div>').join('')+'</div>'+
+  '<div class="card"><h2>Upcoming milestones</h2>'+S.ms.filter(x=>!x.done).sort((a,b)=>a.d.localeCompare(b.d)).slice(0,5).map(x=>'<div class="small" style="margin-bottom:6px"><b>'+x.d+'</b> · '+esc(x.t)+' <span class="mute">('+x.mid+')</span></div>').join('')+'</div></div>';
+};
+V.orig=()=>{
+  const F=S.form,steps=['Client','Asset','Product','Structuring','Assessment','Summary'];
+  const fld=(id,l,t='text',o)=>'<div class="f"><label for="'+id+'">'+l+'</label>'+(o?'<select id="'+id+'">'+opts(o,F[id])+'</select>':t=='area'?'<textarea id="'+id+'">'+esc(F[id])+'</textarea>':'<input id="'+id+'" type="'+t+'" value="'+esc(F[id])+'">')+'</div>';
+  const B=[
+   fld('org','Asset owner / originating organisation')+fld('contact','Contact person')+fld('otype','Organisation type',0,['Corporate','Family office','Fund manager','Financial institution'])+fld('country','Country')+fld('email','Email','email')+fld('phone','Phone'),
+   fld('acat','Asset category',0,['Trade receivables','Leased equipment','Real estate','Private credit book','Private equity holding','Other'])+fld('adesc','Asset description','area')+fld('aloc','Asset location')+fld('aown','Asset ownership details')+fld('adocs','Supporting documentation (names, demo)'),
+   fld('prod','Intended investment product')+fld('pstruct','Investment structure being explored')+fld('inv','Target investor category',0,['Professional / institutional','Family offices','Qualified investors'])+fld('size','Indicative investment size (illustrative)')+fld('dur','Expected duration')+fld('cur','Currency',0,['USD','AED','EUR','GBP']),
+   fld('sp','Structure being explored',0,['Shariah-aligned structure being explored','Conventional structure being explored','Undecided'])+fld('jur','Preferred jurisdictions',0,['DIFC','ADGM','Cayman','UK','Other'])+fld('adv','Relevant advisors')+fld('tech','Technology requirements','area')+fld('cust','Custody requirements'),
+   fld('out','Outstanding information','area')+fld('risk','Potential risks / constraints','area')+fld('spec','Required specialists')+fld('next','Next steps','area'),
+   '<div class="card" style="background:var(--surface2)"><h2>Mandate summary</h2>'+[['Organisation',F.org],['Contact',F.contact],['Asset',F.acat],['Product',F.prod],['Structure',F.sp],['Jurisdiction',F.jur],['Size (illustrative)',F.size],['Next steps',F.next]].map(r=>'<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:5px 0"><span class="mute">'+r[0]+'</span><b>'+esc(r[1]||'(not provided)')+'</b></div>').join('')+'</div>'][S.step];
+  return '<h1>Mandate Origination</h1><p class="sub">Capture a new opportunity before structuring begins. Figures are illustrative; submitting creates a demo mandate at the consultation stage.</p><div class="card" style="max-width:760px"><div class="steps">'+steps.map((s,i)=>'<span class="'+(i==S.step?'on':i<S.step?'done':'')+'">'+(i+1)+'. '+s+'</span>').join('')+'</div><div id="fbody">'+B+'</div><div class="row" style="margin-top:8px">'+(S.step>0?'<button class="btn ghost" data-act="ostep" data-v="-1">Back</button>':'')+'<button class="btn ghost" data-act="osave">Save draft</button>'+(S.step<5?'<button class="btn" data-act="ostep" data-v="1">Next</button>':'<button class="btn em" data-act="osubmit">Submit for internal review</button>')+'</div></div>';
+};
+V.mandates=()=>{
+  const m=M(),ss=S.stageSel==null?m.stage:S.stageSel,q=S.q.toLowerCase();
+  let list=S.mandates.filter(x=>(!S.filter||x.stage==S.filter)&&(!q||(x.name+x.org+x.cat).toLowerCase().includes(q)));
+  const ws=m.ws[Math.min(ss,9)],pa=S.assign.filter(a=>a.mid==m.id);
+  return '<h1>Mandate Management</h1><p class="sub">Each mandate has its own workspace. Select a mandate, then a stage.</p>'+(S.filter!=null?'<p><span class="chip on" data-act="clrf">Stage '+(S.filter+1)+' filter ✕</span></p>':'')+
+  '<div class="card tw"><table><tr><th>Ref</th><th>Product</th><th>Category</th><th>Originator</th><th>Jurisdiction</th><th>Manager</th><th>Stage</th><th>Updated</th></tr>'+list.map(x=>'<tr class="clk" data-act="selm" data-v="'+x.id+'" style="'+(x.id==m.id?'background:var(--em-soft)':'')+'"><td>'+x.id+'</td><td><b>'+esc(x.name)+'</b></td><td>'+x.cat+'</td><td>'+esc(x.org)+'</td><td>'+x.jur+'</td><td>'+x.mgr+'</td><td>'+(x.stage+1)+'. '+esc(STAGES[x.stage])+'</td><td>'+x.upd+'</td></tr>').join('')+'</table></div><br>'+
+  '<div class="card"><h2>'+esc(m.name)+' <span class="mute">('+m.id+')</span></h2>'+lifecycle(m,'stg')+
+  '<div class="grid g2"><div><h3>Stage '+(ss+1)+': '+esc(STAGES[ss])+'</h3><p class="small mute">Status: '+(ss<m.stage?'Completed':ss==m.stage?'Current':'Upcoming')+'</p>'+
+  '<div class="small"><b>Required activities:</b> '+(ss<WS.length?esc(WS[ss])+' coordination, document collection, specialist sign-off':'Onboarding documentation, ongoing reporting')+'<br><b>Assigned partners:</b> '+(pa.length?pa.map(a=>esc(pn(a.partner))).join(', '):'None assigned')+'<br><b>Supporting documents:</b> '+S.docs.filter(d=>d.mid==m.id).length+' in data room<br><b>Outstanding tasks:</b> '+m.ws.filter(w=>w.st<4).length+' workstreams open<br><b>Decisions:</b> '+m.decisions.length+' recorded<br><b>Next milestone:</b> '+esc((S.ms.find(x=>x.mid==m.id&&!x.done)||{t:'None scheduled'}).t)+'</div></div>'+
+  '<div><h3>Update stage manually</h3><div class="f"><label for="nst">Move mandate to</label><select id="nst">'+STAGES.map((s,i)=>'<option value="'+i+'"'+(i==ss?' selected':'')+'>'+(i+1)+'. '+esc(s)+'</option>').join('')+'</select></div><div class="f"><label for="nreason">Reason for status change (required)</label><input id="nreason" placeholder="e.g. Specialist sign-off received"></div><button class="btn em" data-act="setstage">Record stage change</button></div></div></div><br>'+
+  '<div class="card"><h2>Activity history</h2><div class="hist">'+S.audit.filter(a=>a.mid==m.id).slice(0,8).map(a=>'<div><b>'+esc(a.t)+'</b> '+esc(a.c)+(a.from?' <span class="mute">('+esc(a.from)+' → '+esc(a.to)+')</span>':'')+'<br><small>'+a.at+' · '+a.u+'</small></div>').join('')+'</div></div>';
+};
+V.struct=()=>{
+  const m=M();
+  const dec=m.decisions.map(d=>'<div class="small" style="margin-bottom:6px">'+d.d+' · '+esc(d.t)+' <span class="mute">('+esc(d.by)+')</span></div>').join('');
+  const nodes=WS.map((w,i)=>{const a=i/WS.length*Math.PI*2-Math.PI/2;return {x:260+Math.cos(a)*190,y:170+Math.sin(a)*130,w,i}});
+  return '<h1>Product Structuring Workspace</h1><p class="sub">Coordinates the specialists and documents behind '+esc(m.name)+'. It records their work; it does not produce legal, investment or Shariah determinations.</p>'+
+  '<div class="grid g2"><div class="card"><h2>Product information</h2><div class="f"><label for="pn">Product name</label><input id="pn" value="'+esc(m.name)+'"></div><div class="row"><div class="f" style="flex:1 0 140px"><label for="pj">Jurisdiction</label><input id="pj" value="'+esc(m.jur)+'"></div><div class="f" style="flex:1 0 140px"><label for="ps">Indicative size (illustrative)</label><input id="ps" value="'+esc(m.size)+'"></div></div><div class="f"><label for="pst">Structure</label><input id="pst" value="'+esc(m.struct)+'"></div><button class="btn" data-act="savep">Save product information</button></div>'+
+  '<div class="card"><h2>Executive summary</h2><div class="kpi"><div class="n">'+wsprog(m)+'%</div><div class="l">Workstream progress (coordination status only)</div></div><div class="bar" style="margin:8px 0"><i style="width:'+wsprog(m)+'%"></i></div><div class="small">Stage: <b>'+esc(STAGES[m.stage])+'</b><br>Open workstreams: '+m.ws.filter(w=>w.st<4).length+'<br>Open Shariah observations: '+m.sh.obs.filter(o=>o.open).length+'<br>Regulatory items not complete: '+m.reg.filter(r=>r.st<5).length+'</div></div></div><br>'+
+  '<div class="card"><h2>Product blueprint</h2><svg viewBox="0 0 520 340" style="width:100%;max-height:380px"><g stroke="var(--line)">'+nodes.map(n=>'<line class="flow" x1="260" y1="170" x2="'+n.x+'" y2="'+n.y+'" stroke="var(--em)" opacity=".4"/>').join('')+'</g><circle cx="260" cy="170" r="42" fill="var(--navy2)"/><text x="260" y="167" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">'+esc(m.id)+'</text><text x="260" y="180" text-anchor="middle" font-size="8" fill="#c9d3e6">mandate</text>'+nodes.map(n=>{const s=m.ws[n.i].st;return '<g class="node" data-act="wsel" data-v="'+n.i+'"><rect x="'+(n.x-52)+'" y="'+(n.y-16)+'" width="104" height="32" rx="7" fill="var(--surface)" stroke="'+(s==4?'var(--em)':s>0?'var(--gold)':'var(--line)')+'" stroke-width="1.5"/><text x="'+n.x+'" y="'+(n.y-2)+'" text-anchor="middle" font-size="8.5" fill="var(--fg)" font-weight="700">'+esc(n.w.length>22?n.w.slice(0,21)+'…':n.w)+'</text><text x="'+n.x+'" y="'+(n.y+10)+'" text-anchor="middle" font-size="7.5" fill="var(--mute)">'+WST[s]+'</text></g>'}).join('')+'</svg></div><br>'+
+  '<div class="card tw"><h2>Structuring checklist and workstreams</h2><table><tr><th>Workstream</th><th>Responsible partner</th><th>Review status</th><th>Outstanding</th></tr>'+m.ws.map((w,i)=>'<tr><td>'+esc(w.n)+'</td><td><select data-act="wpart" data-v="'+i+'"><option value="">Unassigned ('+WSCAT[i]+')</option>'+P.filter(p=>p.cat==WSCAT[i]).map(p=>'<option value="'+p.id+'"'+(w.partner==p.id?' selected':'')+'>'+esc(p.name)+'</option>').join('')+'</select></td><td><select data-act="wst" data-v="'+i+'">'+opts(WST,WST[w.st])+'</select></td><td class="small">'+(w.st<4?'Awaiting specialist deliverable':'None')+'</td></tr>').join('')+'</table></div><br>'+
+  '<div class="card"><h2>Decision log</h2>'+dec+'<div class="row"><input id="dtext" placeholder="Record a decision" style="flex:1 0 220px"><button class="btn" data-act="adddec">Add decision</button></div></div>';
+};
+V.shariah=()=>{
+  const m=M(),s=m.sh,flow=['Structure submission','Document review','Initial advisor assessment','Comments and observations','Revised structure','Final review','Recorded advisor decision'];
+  const idx=[0,1,2,3,4,6][s.st];
+  return '<h1>Shariah Governance &amp; Review</h1><p class="sub">Coordinates the independent advisor and keeps the record. Nothing here is a ruling. A decision is recorded only when the authorised advisor provides it.</p>'+
+  '<div class="warnbox"><b>No automatic determination.</b> This workspace never generates a fatwa or a compliance score. Status "Completed by Advisor" requires the advisor name and the advisor\'s own decision text.</div>'+
+  '<div class="grid g2"><div class="card"><h2>'+esc(m.name)+'</h2><div class="small">Category: '+m.cat+'<br>Latest review date: '+(s.st>1?'2026-11-14':'n/a')+'<br>Pending documents: '+(s.st==1?3:s.st<5?1:0)+'</div><div class="f" style="margin-top:10px"><label for="shst">Review status</label><select id="shst" data-act="shst">'+opts(SHS,SHS[s.st])+'</select></div><div class="f"><label for="shadv">Assigned Shariah advisor</label><select id="shadv" data-act="shadv">'+opts(P.filter(p=>p.cat=='Shariah Advisor').map(p=>p.name),s.advisor)+'</select></div><div class="row"><span class="small">Independence disclosure:</span> '+(s.indep?'<span class="pill t-ok">On record (demo)</span>':'<span class="pill t-warn">Not yet received</span>')+'<button class="btn ghost sm" data-act="indep">'+(s.indep?'Clear':'Mark received')+'</button></div></div>'+
+  '<div class="card"><h2>Review workflow</h2><div class="hist">'+flow.map((f,i)=>'<div style="opacity:'+(i<=idx?1:.45)+'"><b>'+f+'</b>'+(i==idx?' <span class="pill t-gold">current</span>':'')+'</div>').join('')+'</div></div></div><br>'+
+  '<div class="grid g2"><div class="card"><h2>Advisor observations</h2>'+(s.obs.length?s.obs.map((o,i)=>'<div class="row" style="justify-content:space-between;margin-bottom:6px"><span class="small">'+esc(o.t)+'</span><span><span class="pill '+(o.open?'t-warn':'t-ok')+'">'+(o.open?'Open':'Responded')+'</span> <button class="btn ghost sm" data-act="obs" data-v="'+i+'">Toggle</button></span></div>').join(''):'<p class="mute small">No observations yet.</p>')+'<div class="row"><input id="otext" placeholder="Log an advisor observation" style="flex:1 0 200px"><button class="btn" data-act="addobs">Add</button></div></div>'+
+  '<div class="card"><h2>Recorded advisor decision</h2>'+(s.decision?'<div class="small"><b>'+esc(s.decBy)+'</b> recorded:<br>'+esc(s.decision)+'</div>':'<p class="mute small">No decision recorded.</p>')+'<div class="f"><label for="decby">Advisor name</label><input id="decby"></div><div class="f"><label for="dectext">Decision as provided by the advisor</label><textarea id="dectext"></textarea></div><button class="btn em" data-act="recdec">Record advisor decision</button></div></div><br>'+
+  '<div class="card"><h2>Documents and versions</h2>'+['Product structure documents','Underlying asset information','Transaction documentation','Supporting evidence','Advisor comments','Review versions','Decisions and records'].map((c,i)=>'<span class="chip" style="display:inline-block;margin:0 6px 6px 0">'+c+' · '+(i<S.docs.filter(d=>d.mid==m.id).length+2?'v'+(1+i%2):'-')+'</span>').join('')+'</div>';
+};
+V.reg=()=>{
+  const m=M();
+  return '<h1>Regulatory Pathways</h1><p class="sub">Tracks the filings and the specialists preparing them. All legal and regulatory assessments belong to qualified, licensed professionals.</p><div class="warnbox"><b>Not a status of approval.</b> "Completed by Responsible Party" means that party finished its task. It does not mean the product is approved, licensed or compliant.</div>'+
+  '<div class="grid g3">'+[['DIFC','Dubai International Financial Centre. Illustrative option for fund and note structures.'],['ADGM','Abu Dhabi Global Market. Illustrative option for leasing and credit structures.'],['Other','Cayman, UK or other international venues, subject to specialist advice.']].map(j=>'<div class="card click" data-act="setjur" data-v="'+j[0]+'" style="'+(m.jur==j[0]?'border-color:var(--em)':'')+'"><h3>'+j[0]+(m.jur==j[0]?' · selected':'')+'</h3><p class="small mute" style="margin:0">'+j[1]+'</p></div>').join('')+'</div><br>'+
+  '<div class="card tw"><h2>Document tracker for '+esc(m.name)+'</h2><table><tr><th>Document</th><th>Responsible</th><th>Target date</th><th>Status</th><th>Version</th><th>Comments</th></tr>'+m.reg.map((r,i)=>'<tr><td>'+esc(r.doc)+'</td><td>'+esc(r.party)+'</td><td>'+r.date+'</td><td><select data-act="rst" data-v="'+i+'">'+opts(RGS,RGS[r.st])+'</select></td><td>'+r.ver+'</td><td><input data-act="rnote" data-v="'+i+'" value="'+esc(r.note)+'" placeholder="Comment"></td></tr>').join('')+'</table><div class="row" style="margin-top:10px"><input id="rdoc" placeholder="New document name" style="flex:1 0 200px"><select id="rpty" style="width:auto">'+opts(CATS)+'</select><button class="btn" data-act="addreg">Add requirement</button></div></div><br>'+
+  '<div class="card"><h2>Workstream timeline</h2><div class="hist">'+m.reg.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(r=>'<div><b>'+r.date+'</b> '+esc(r.doc)+' '+pill(RGS[r.st])+'</div>').join('')+'</div></div>';
+};
+V.partners=()=>{
+  const m=M(),as=S.assign.filter(a=>a.mid==m.id),ids=[...new Set(as.map(a=>a.partner).concat(m.ws.map(w=>w.partner).filter(Boolean)))];
+  const ns=ids.map((id,i)=>{const a=i/Math.max(1,ids.length)*Math.PI*2-Math.PI/2;return {id,x:260+Math.cos(a)*170,y:150+Math.sin(a)*105}});
+  const sel=S.node&&P.find(p=>p.id==S.node);
+  return '<h1>Partner Ecosystem</h1><p class="sub">Sample partners only. Listing a partner here does not imply any agreement with Zamanat.</p>'+
+  '<div class="card"><h2>Network around '+esc(m.name)+'</h2><svg viewBox="0 0 520 300" style="width:100%;max-height:320px">'+ns.map(n=>'<line class="flow" x1="260" y1="150" x2="'+n.x+'" y2="'+n.y+'" stroke="var(--em)"/>').join('')+'<circle cx="260" cy="150" r="38" fill="var(--navy2)"/><text x="260" y="154" text-anchor="middle" font-size="10" fill="#fff" font-weight="800">ZAMANAT</text>'+ns.map(n=>{const p=P.find(x=>x.id==n.id);return '<g class="node" data-act="pnode" data-v="'+n.id+'"><circle cx="'+n.x+'" cy="'+n.y+'" r="30" fill="var(--surface)" stroke="'+(S.node==n.id?'var(--gold)':'var(--em)')+'" stroke-width="2"/><text x="'+n.x+'" y="'+(n.y-2)+'" text-anchor="middle" font-size="7.5" fill="var(--fg)" font-weight="700">'+esc(p.name.split(' ').slice(0,2).join(' '))+'</text><text x="'+n.x+'" y="'+(n.y+9)+'" text-anchor="middle" font-size="6.5" fill="var(--mute)">'+esc(p.cat)+'</text></g>'}).join('')+'</svg>'+(ids.length?'':'<p class="mute small">No partners assigned to this mandate yet. Assign one below.</p>')+
+  (sel?'<div class="card" style="background:var(--surface2)"><b>'+esc(sel.name)+'</b> · '+sel.cat+'<br><span class="small mute">Workstreams: '+(S.assign.filter(a=>a.partner==sel.id&&a.mid==m.id).map(a=>a.ws+' ('+a.st+')').join('; ')||'none')+'</span></div>':'<p class="small mute">Click a partner node for its workstream.</p>')+'</div><br>'+
+  '<div class="card"><h2>Assign a workstream</h2><div class="row"><select id="aws" style="width:auto">'+opts(WS)+'</select><select id="apt" style="width:auto">'+P.map(p=>'<option value="'+p.id+'">'+esc(p.name)+'</option>').join('')+'</select><input id="adue" type="date" value="2026-12-20" style="width:auto"><input id="adel" placeholder="Deliverable" style="flex:1 0 160px"><button class="btn em" data-act="assign">Assign</button></div></div><br>'+
+  '<div class="card tw"><h2>Assignments</h2><table><tr><th>Mandate</th><th>Workstream</th><th>Partner</th><th>Deliverable</th><th>Due</th><th>Status</th></tr>'+S.assign.map((a,i)=>'<tr><td>'+a.mid+'</td><td>'+esc(a.ws)+'</td><td>'+esc(pn(a.partner))+'</td><td>'+esc(a.deliv)+'</td><td>'+a.due+'</td><td><select data-act="ast" data-v="'+i+'">'+opts(['Not Started','In Progress','Completed'],a.st)+'</select></td></tr>').join('')+'</table></div><br>'+
+  '<div class="card"><h2>Partner directory</h2><div class="row" style="margin-bottom:10px">'+['All',...CATS].map(c=>'<button class="chip'+(S.pcat==c?' on':'')+'" data-act="pcat" data-v="'+c+'">'+c+'</button>').join('')+'</div><div class="tw"><table><tr><th>Organisation</th><th>Category</th><th>Jurisdictions</th><th>Specialisation</th><th>Assigned</th><th>Status</th></tr>'+P.filter(p=>S.pcat=='All'||p.cat==S.pcat).filter(p=>!S.q||p.name.toLowerCase().includes(S.q.toLowerCase())).map(p=>'<tr><td>'+esc(p.name)+'</td><td>'+p.cat+'</td><td>'+p.jur+'</td><td>'+p.spec+'</td><td>'+S.assign.filter(a=>a.partner==p.id).length+'</td><td>'+pill(p.status)+'</td></tr>').join('')+'</table></div></div>';
+};
+V.tech=()=>{
+  const m=M(),i=S.techSel,t=TECH[i];
+  return '<h1>Tokenization &amp; Technology</h1><p class="sub">Coordinates technology partners and dependencies. This is a demonstration environment only.</p><div class="warnbox"><b>No tokens are issued.</b> No blockchain transaction, custody action or subscription is executed from this prototype.</div>'+
+  '<div class="card"><h2>Architecture</h2><div style="overflow-x:auto"><svg viewBox="0 0 900 110" style="min-width:760px;width:100%"><g>'+TECH.map((n,k)=>'<g class="node" data-act="tsel" data-v="'+k+'"><rect x="'+(k*128+6)+'" y="30" width="112" height="50" rx="8" fill="var(--surface)" stroke="'+(k==i?'var(--gold)':'var(--em)')+'" stroke-width="'+(k==i?3:1.5)+'"/><text x="'+(k*128+62)+'" y="52" text-anchor="middle" font-size="10" font-weight="700" fill="var(--fg)">'+esc(n[0].split(' ')[0])+'</text><text x="'+(k*128+62)+'" y="66" text-anchor="middle" font-size="9" fill="var(--mute)">'+esc(n[0].split(' ').slice(1).join(' '))+'</text></g>'+(k<6?'<line class="flow" x1="'+(k*128+118)+'" y1="55" x2="'+(k*128+134)+'" y2="55" stroke="var(--em)" stroke-width="2"/>':'')).join('')+'</g></svg></div></div><br>'+
+  '<div class="grid g2"><div class="card"><h2>'+t[0]+'</h2><div class="small"><b>Assigned partner:</b> '+(i==3?esc(pn('P5')):i==4?esc(pn('P6')):i==6?esc(pn('P7')):'Zamanat coordination team')+'<br><b>Required documentation:</b> '+t[1]+'<br><b>Dependencies:</b> '+(i>0?TECH[i-1][0]:'None')+'<br><b>Outstanding issues:</b> '+(m.tech[i]<4?'Awaiting partner deliverable':'None')+'</div><div class="f" style="margin-top:10px"><label for="tst">Status</label><select id="tst" data-act="tst">'+opts(TECHS,TECHS[m.tech[i]])+'</select></div></div>'+
+  '<div class="card"><h2>Technical readiness checklist</h2>'+['Asset and product information','Legal structure dependencies','Tokenization provider','Token design requirements','Technical documentation','Custody integration coordination','Whitelisting and transfer restrictions','Reporting and recordkeeping','Technical testing','Deployment readiness'].map((c,k)=>'<div class="row small" style="justify-content:space-between;margin-bottom:4px"><span>'+c+'</span>'+pill(TECHS[m.tech[Math.min(k,6)]])+'</div>').join('')+'</div></div>';
+};
+V.fund=()=>{
+  const m=M(),items=[['Custody arrangements','Custodian','P6'],['Fund administrator appointed','Fund Administrator','P7'],['NAV and registry process outline','Fund Administrator','P7'],['Reporting calendar','Fund Administrator','P7'],['Custody integration with tokenization provider','Custodian','P6']];
+  m.fa=m.fa||items.map((x,i)=>i<Math.max(0,m.stage-6));
+  return '<h1>Fund Administration &amp; Custody</h1><p class="sub">Coordination of appointed third parties. Zamanat does not hold assets or administer funds.</p><div class="card">'+items.map((x,i)=>'<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><label style="margin:0;color:var(--fg);display:flex;gap:8px;align-items:center"><input type="checkbox" style="width:auto" data-act="fa" data-v="'+i+'" '+(m.fa[i]?'checked':'')+'> '+x[0]+'</label><span class="small mute">'+x[1]+' · '+esc(pn(x[2]))+' (sample)</span></div>').join('')+'<p class="small mute">Ticking records that the partner reported the item complete. It does not verify the arrangement.</p></div>';
+};
+V.dist=()=>{
+  const m=M(),p=prog(m);
+  return '<h1>Distribution Readiness</h1><p class="sub">What still needs to happen before '+esc(m.name)+' could be considered for its intended channels.</p>'+
+  '<div class="warnbox"><b>Readiness is not approval.</b> A high percentage never means the product is approved or ready for public distribution. '+m.dist.filter(d=>!d.done).length+' items outstanding, and regulatory, Shariah and legal reviews remain with the responsible professionals.</div>'+
+  '<div class="card"><div class="kpi"><div class="n">'+p+'%</div><div class="l">Checklist items with evidence recorded</div></div><div class="bar" style="margin-top:8px"><i style="width:'+p+'%"></i></div></div><br><div class="card tw"><table><tr><th></th><th>Requirement</th><th>Assigned partner</th><th>Required evidence</th><th>Target</th><th>Review status</th></tr>'+m.dist.map((d,i)=>'<tr><td><input type="checkbox" style="width:auto" data-act="dchk" data-v="'+i+'" '+(d.done?'checked':'')+' aria-label="Complete"></td><td>'+d.n+'</td><td>'+esc(pn(['P2','P2','P4','P1','P6','P7','P5','P8','P8','P7'][i]))+'</td><td><input data-act="dev" data-v="'+i+'" value="'+esc(d.ev)+'" placeholder="Evidence reference"></td><td>'+d.target+'</td><td>'+(d.done?pill('Evidence recorded'):pill('Not Started'))+'</td></tr>').join('')+'</table></div>';
+};
+V.ms=()=>'<h1>Workflow &amp; Milestones</h1><p class="sub">Dated commitments across all mandates.</p><div class="card">'+S.ms.slice().sort((a,b)=>a.d.localeCompare(b.d)).map(x=>'<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--line);padding:8px 0"><label style="margin:0;color:var(--fg);display:flex;gap:8px;align-items:center;'+(x.done?'text-decoration:line-through;opacity:.6':'')+'"><input type="checkbox" style="width:auto" data-act="msd" data-v="'+x.id+'" '+(x.done?'checked':'')+'> '+esc(x.t)+'</label><span class="small mute">'+x.mid+' · '+x.d+'</span></div>').join('')+'<div class="row" style="margin-top:12px"><input id="mst" placeholder="New milestone" style="flex:1 0 200px"><input id="msd" type="date" value="2026-12-30" style="width:auto"><button class="btn" data-act="addms">Add for selected mandate</button></div></div>';
+V.docs=()=>{
+  const q=S.q.toLowerCase(),l=S.docs.filter(d=>(S.dcat=='All'||d.cat==S.dcat)&&(!q||(d.name+d.mid).toLowerCase().includes(q)));
+  return '<h1>Document Data Room</h1><p class="sub">Demonstration materials only. This prototype is not a certified secure data room.</p><div class="row" style="margin-bottom:12px">'+['All',...DOCCATS].map(c=>'<button class="chip'+(S.dcat==c?' on':'')+'" data-act="dcat" data-v="'+c+'">'+c+'</button>').join('')+'</div>'+
+  '<div class="card" style="margin-bottom:14px"><div class="row"><input type="file" id="fup" style="flex:1 0 200px"><select id="fcat" style="width:auto">'+opts(DOCCATS)+'</select><button class="btn em" data-act="upload">Add to selected mandate</button></div><p class="small mute" style="margin:6px 0 0">Only the file name is recorded in this demo. Nothing is uploaded.</p></div>'+
+  '<div class="grid g3">'+(l.map(d=>'<div class="card"><div class="row" style="justify-content:space-between"><b class="small">'+esc(d.name)+'</b>'+pill(d.st)+'</div><div class="small mute">'+d.cat+' · '+d.mid+'<br>Owner: '+esc(d.owner)+' · '+d.upd+'<br>Access: '+d.acc+'</div><div class="row" style="margin-top:8px"><button class="btn ghost sm" data-act="dver" data-v="'+d.id+'">Versions ('+d.vers.length+')</button><button class="btn ghost sm" data-act="dnew" data-v="'+d.id+'">Add version</button></div>'+(d.open?'<div class="small" style="margin-top:6px">'+d.vers.map(v=>'<div>'+v+' · '+d.upd+' · '+esc(d.owner)+'</div>').join('')+'</div>':'')+'</div>').join('')||'<p class="mute">No documents match.</p>')+'</div>';
+};
+V.audit=()=>'<h1>Audit Trail</h1><p class="sub">Every action in this session, newest first. Records are demonstration data.</p><div class="card"><div class="hist">'+S.audit.filter(a=>!S.q||(a.c+a.t+a.mid).toLowerCase().includes(S.q.toLowerCase())).map(a=>'<div><b>'+esc(a.t)+'</b> · '+a.mid+' · '+esc(a.c)+(a.from||a.to?' <span class="mute">('+esc(a.from||'-')+' → '+esc(a.to||'-')+')</span>':'')+'<br><small>'+a.at+' · '+a.u+'</small></div>').join('')+'</div></div>';
+function answer(q){
+  const m=M(),l=q.toLowerCase();
+  if(/fatwa|rule|ruling|halal|compliant|approve|legal opinion|recommend|should (we|i) invest|buy/.test(l))return 'I can\'t give a Shariah ruling, regulatory determination, legal opinion or investment recommendation. Those belong to the authorised advisor, counsel and regulator. I can summarise what has been recorded for '+m.name+': Shariah status is "'+SHS[m.sh.st]+'" with '+m.sh.obs.filter(o=>o.open).length+' open observation(s).';
+  if(/outstanding|document|missing/.test(l))return 'Outstanding documents for '+m.name+' (demo data):\n'+m.reg.filter(r=>r.st<5).map(r=>'- '+r.doc+' ('+r.party+', '+RGS[r.st]+')').join('\n')+'\n\nSources: Regulatory tracker, Data room. Summary for review by an authorised professional.';
+  if(/partner|assigned/.test(l))return 'Partner tasks for '+m.id+':\n'+(S.assign.filter(a=>a.mid==m.id).map(a=>'- '+pn(a.partner)+': '+a.ws+', due '+a.due+' ('+a.st+')').join('\n')||'None assigned yet.');
+  if(/milestone|upcoming/.test(l))return 'Upcoming milestones:\n'+S.ms.filter(x=>!x.done).sort((a,b)=>a.d.localeCompare(b.d)).slice(0,4).map(x=>'- '+x.d+' '+x.t+' ('+x.mid+')').join('\n');
+  if(/shariah|advisor|comment/.test(l))return 'Shariah workspace for '+m.name+': status "'+SHS[m.sh.st]+'", advisor '+m.sh.advisor+'. Observations: '+(m.sh.obs.map(o=>o.t+' ['+(o.open?'open':'responded')+']').join('; ')||'none')+'. Advisor decision recorded: '+(m.sh.decision?'yes':'no')+'.';
+  if(/regulat|unresolved|issue/.test(l))return 'Regulatory items not yet complete: '+(m.reg.filter(r=>r.st<5).map(r=>r.doc+' ('+RGS[r.st]+')').join('; ')||'none')+'. Completion by a party is not approval.';
+  return 'Executive update for '+m.name+' ('+m.id+', '+m.cat+', '+m.jur+')\n- Stage: '+STAGES[m.stage]+'\n- Workstream progress: '+wsprog(m)+'%\n- Shariah review: '+SHS[m.sh.st]+'\n- Open regulatory items: '+m.reg.filter(r=>r.st<5).length+'\n- Distribution checklist: '+prog(m)+'% (not an approval)\n\nDraft for review by an authorised professional.';
+}
+V.ai=()=>'<h1>AI Copilot</h1><p class="sub">Summarises recorded information for the selected mandate ('+esc(M().id)+'). It never issues a Shariah ruling, regulatory determination, legal opinion or investment recommendation. Answers are generated from the demo records on this page.</p><div class="card"><div class="chat" id="chat">'+S.msgs.map((x,i)=>'<div class="msg '+x.r+'">'+esc(x.t)+(x.r=='a'&&!x.typing?'<div class="row" style="margin-top:8px"><button class="btn ghost sm" data-act="cpy" data-v="'+i+'">Copy summary</button><span class="small mute">Needs review by an authorised professional</span></div>':'')+(x.typing?'<span class="typing"><span></span><span></span><span></span></span>':'')+'</div>').join('')+'</div><div class="row" style="margin:10px 0">'+['Summarize the current status of this mandate','Which documents are still outstanding?','What tasks are assigned to external partners?','Which milestones are approaching?','Summarize the latest Shariah advisor comments','Show unresolved issues across the regulatory workstream','Prepare an executive update'].map(q=>'<button class="chip" data-act="ask" data-v="'+q+'">'+q+'</button>').join('')+'</div><div class="row"><input id="aq" placeholder="Ask about this mandate" style="flex:1 0 200px"><button class="btn em" data-act="askin">Send</button></div></div>';
+function reportText(){
+  const r=S.rep,ms=S.mandates.filter(m=>(r.mid=='All'||m.id==r.mid)&&(r.cat=='All'||m.cat==r.cat));
+  return 'ZAMANAT EXECUTIVE REPORT (DEMONSTRATION DATA)\nPeriod: '+r.per+'\n\n'+ms.map(m=>m.id+' '+m.name+' ('+m.cat+', '+m.jur+')\n  Stage: '+STAGES[m.stage]+'\n  Workstream progress: '+wsprog(m)+'%\n  Shariah review status: '+SHS[m.sh.st]+'\n  Open regulatory items: '+m.reg.filter(r=>r.st<5).length+'\n  Distribution checklist: '+prog(m)+'% (not an approval)\n  Pending decisions: '+m.sh.obs.filter(o=>o.open).length+' open observation(s)').join('\n\n')+'\n\nNote: statuses record coordination activity only. No product is represented as approved or compliant.';
+}
+V.rep=()=>{
+  const r=S.rep,ms=S.mandates.filter(m=>(r.mid=='All'||m.id==r.mid)&&(r.cat=='All'||m.cat==r.cat));
+  const rs={};ms.forEach(m=>rs[SHS[m.sh.st]]=(rs[SHS[m.sh.st]]||0)+1);
+  return '<h1>Executive Reports</h1><p class="sub">Filter, preview and copy. Downloads are not available inside this page, so copy the text or CSV.</p><div class="card"><div class="row"><div><label for="rper">Period</label><select id="rper" data-act="rpar" data-v="per">'+opts(['Last 30 days','Last quarter','Year to date'],r.per)+'</select></div><div><label for="rmid">Mandate</label><select id="rmid" data-act="rpar" data-v="mid">'+opts(['All',...S.mandates.map(m=>m.id)],r.mid)+'</select></div><div><label for="rcat">Category</label><select id="rcat" data-act="rpar" data-v="cat">'+opts(['All',...new Set(S.mandates.map(m=>m.cat))],r.cat)+'</select></div></div></div><br>'+
+  '<div class="grid g2"><div class="card"><h2>Workflow completion by product</h2>'+(ms.map(m=>'<div style="margin-bottom:8px"><div class="row small" style="justify-content:space-between"><span>'+esc(m.name)+'</span><b>'+wsprog(m)+'%</b></div><div class="bar"><i style="width:'+wsprog(m)+'%"></i></div></div>').join('')||'<p class="mute">No mandates match.</p>')+'</div><div class="card"><h2>Review status distribution</h2>'+(ms.length?donut(Object.entries(rs)):'')+'</div></div><br>'+
+  '<div class="card"><h2>Report preview</h2><pre style="white-space:pre-wrap;font-family:var(--font);font-size:12.5px;margin:0">'+esc(reportText())+'</pre><div class="row" style="margin-top:10px"><button class="btn em" data-act="cprep">Copy report</button><button class="btn ghost" data-act="ccsv">Copy CSV</button></div></div>';
+};
+
+const NAV=[['OVERVIEW',[['dash','◆','Executive Dashboard'],['orig','+','Mandate Origination'],['mandates','▤','Mandate Management'],['struct','◫','Product Structuring']]],['GOVERNANCE & INFRASTRUCTURE',[['shariah','☪','Shariah Governance'],['reg','§','Regulatory Pathways'],['partners','⌘','Partner Ecosystem'],['tech','⛓','Tokenization & Tech'],['fund','◎','Fund Administration'],['dist','➤','Distribution Readiness']]],['OPERATIONS',[['ms','◷','Workflow & Milestones'],['docs','▣','Document Data Room'],['audit','≡','Audit Trail'],['ai','✦','AI Copilot'],['rep','▦','Executive Reports']]]];
+const TITLES={};NAV.forEach(g=>g[1].forEach(n=>TITLES[n[0]]=n[2]));
+function renderSide(){document.getElementById('side').innerHTML='<div class="brand"><b>ZAMANAT</b><span>Institutional Orchestration Hub</span></div>'+NAV.map(g=>'<div class="navg">'+g[0]+'</div>'+g[1].map(n=>'<button class="nav'+(S.view==n[0]?' on':'')+'" data-act="go" data-v="'+n[0]+'"><i>'+n[1]+'</i>'+n[2]+'</button>').join('')).join('')}
+function renderTop(){const g=document.getElementById('gsel');g.innerHTML=S.mandates.map(m=>'<option value="'+m.id+'"'+(m.id==S.sel?' selected':'')+'>'+m.id+' · '+esc(m.name)+'</option>').join('');document.getElementById('crumb').textContent=TITLES[S.view];document.getElementById('bellN').textContent=S.alerts}
+function render(skel){
+  renderSide();renderTop();const v=document.getElementById('view');
+  if(skel){v.innerHTML='<div class="grid g3"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>';setTimeout(()=>render(),220);return}
+  const keep=document.activeElement&&document.activeElement.id,ss=document.activeElement&&document.activeElement.selectionStart;
+  v.style.animation='none';void v.offsetWidth;v.style.animation='';
+  v.innerHTML=V[S.view]();
+  const c=document.getElementById('chat');if(c)c.scrollTop=c.scrollHeight;
+}
+function go(v){S.view=v;if(v!='mandates')S.stageSel=null;render(true);scrollTo(0,0)}
+const val=id=>{const e=document.getElementById(id);return e?e.value:''};
+function snapshotForm(){document.querySelectorAll('#fbody input,#fbody select,#fbody textarea').forEach(e=>S.form[e.id]=e.value)}
+function ask(q){if(!q.trim())return;S.msgs.push({r:'u',t:q});S.msgs.push({r:'a',t:'',typing:true});render();setTimeout(()=>{S.msgs.pop();S.msgs.push({r:'a',t:answer(q)});render()},700)}
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act]');if(!t||t.tagName=='SELECT'||(t.tagName=='INPUT'&&t.type!='checkbox'))return;
+  const a=t.dataset.act,v=t.dataset.v,m=M();
+  if(a=='go')go(v);
+  else if(a=='theme'){const r=document.documentElement,d=matchMedia('(prefers-color-scheme:dark)').matches,cur=r.dataset.theme||(d?'dark':'light');r.dataset.theme=cur=='dark'?'light':'dark'}
+  else if(a=='bell'){toast(S.alerts+' alerts: advisor comments due 27 Nov, custody outline due 5 Dec, pathway memo review 4 Dec (demo)')}
+  else if(a=='dstage'){S.sel=S.sel;S.stageSel=+v;S.view='mandates';render(true)}
+  else if(a=='pipe'){const i=STAGES.findIndex(s=>s.split(' ')[0].replace('&','').slice(0,8)==v);S.filter=i;go('mandates')}
+  else if(a=='clrf'){S.filter=null;render()}
+  else if(a=='selm'){S.sel=v;S.stageSel=null;render()}
+  else if(a=='stg'){S.stageSel=+v;render()}
+  else if(a=='setstage'){const n=+val('nst'),r=val('nreason').trim();if(!r){toast('Enter a reason for the stage change');return}const f=STAGES[m.stage];m.stage=n;m.upd=now().slice(0,10);log('Stage updated',m.id,r,f,STAGES[n]);m.decisions.unshift({d:now().slice(0,10),t:'Stage set to '+STAGES[n]+': '+r,by:'You (demo)'});toast('Stage updated and recorded');render()}
+  else if(a=='ostep'){snapshotForm();S.step=Math.max(0,Math.min(5,S.step+ +v));render()}
+  else if(a=='osave'){snapshotForm();S.draft=JSON.parse(JSON.stringify(S.form));toast('Draft saved')}
+  else if(a=='osubmit'){snapshotForm();const F=S.form;if(!F.org||!F.prod){toast('Add the organisation (step 1) and product (step 3) first');return}const id='M-'+(107+S.mandates.length-6);const base=JSON.parse(JSON.stringify(S.mandates[5]));Object.assign(base,{id,name:F.prod,cat:'Private Credit',org:F.org,jur:F.jur||'DIFC',stage:0,mgr:'Unassigned',size:(F.size||'Illustrative')+' ',upd:now().slice(0,10),struct:F.sp||'To be confirmed',decisions:[{d:now().slice(0,10),t:'Mandate submitted for internal review',by:'You (demo)'}]});base.ws=WS.map(w=>({n:w,st:0,partner:null}));base.sh={st:0,advisor:'Northgate Shariah Advisory',indep:false,obs:[],decision:'',decBy:''};base.dist.forEach(d=>{d.done=false;d.ev=''});base.tech=TECH.map(()=>0);S.mandates.push(base);S.sel=id;log('Mandate created',id,'Submitted for internal review','','Initial Consultation');S.form={};S.step=0;toast('Mandate '+id+' submitted');go('mandates')}
+  else if(a=='savep'){m.name=val('pn');m.jur=val('pj');m.size=val('ps');m.struct=val('pst');log('Product information updated',m.id,'Edited by user');toast('Saved');renderTop()}
+  else if(a=='wsel'){toast(WS[+v]+': '+WST[m.ws[+v].st])}
+  else if(a=='adddec'){const t=val('dtext').trim();if(!t)return;m.decisions.unshift({d:now().slice(0,10),t,by:'You (demo)'});log('Decision recorded',m.id,t);render()}
+  else if(a=='indep'){m.sh.indep=!m.sh.indep;log('Independence disclosure',m.id,m.sh.indep?'Marked received':'Cleared');render()}
+  else if(a=='obs'){m.sh.obs[+v].open=!m.sh.obs[+v].open;log('Observation updated',m.id,m.sh.obs[+v].t);render()}
+  else if(a=='addobs'){const t=val('otext').trim();if(!t)return;m.sh.obs.push({t,open:true});log('Review comment',m.id,t);render()}
+  else if(a=='recdec'){const by=val('decby').trim(),tx=val('dectext').trim();if(!by||!tx){toast('Advisor name and decision text are both required');return}m.sh.decision=tx;m.sh.decBy=by;m.sh.st=5;log('Advisor decision recorded',m.id,'Recorded as provided by '+by,'','Completed by Advisor');toast('Recorded as provided by the advisor');render()}
+  else if(a=='setjur'){m.jur=v=='Other'?'Cayman':v;log('Jurisdiction set',m.id,m.jur);render()}
+  else if(a=='addreg'){const d=val('rdoc').trim();if(!d)return;m.reg.push({doc:d,party:val('rpty'),st:0,ver:'v0.1',date:'2027-01-15',note:''});log('Requirement added',m.id,d);render()}
+  else if(a=='pnode'){S.node=v;render()}
+  else if(a=='assign'){S.assign.push({mid:m.id,ws:val('aws'),partner:val('apt'),due:val('adue'),st:'Not Started',deliv:val('adel')||'Deliverable to be confirmed'});log('Partner assigned',m.id,pn(val('apt'))+' for '+val('aws'));toast('Assigned');render()}
+  else if(a=='pcat'){S.pcat=v;render()}
+  else if(a=='tsel'){S.techSel=+v;render()}
+  else if(a=='msd'){}
+  else if(a=='addms'){const t=val('mst').trim();if(!t)return;S.ms.push({id:S.ms.length+10,mid:m.id,t,d:val('msd'),done:false});log('Milestone added',m.id,t);render()}
+  else if(a=='dcat'){S.dcat=v;render()}
+  else if(a=='upload'){const f=document.getElementById('fup').files[0];if(!f){toast('Choose a file first');return}S.docs.unshift({id:Date.now(),name:f.name+' (demo)',cat:val('fcat'),mid:m.id,st:'Draft',owner:'You',upd:now().slice(0,10),vers:['v1'],acc:'Internal only'});log('Document added',m.id,f.name);toast('Added (name only)');render()}
+  else if(a=='dver'){const d=S.docs.find(x=>x.id==v);d.open=!d.open;render()}
+  else if(a=='dnew'){const d=S.docs.find(x=>x.id==v);d.vers.push('v'+(d.vers.length+1));d.upd=now().slice(0,10);log('Document version',d.mid,d.name+' '+d.vers.slice(-1));render()}
+  else if(a=='ask')ask(v);
+  else if(a=='askin'){const q=val('aq');ask(q)}
+  else if(a=='cpy'){const x=S.msgs[+v].t;navigator.clipboard.writeText(x).then(()=>toast('Copied')).catch(()=>toast('Select the text to copy'))}
+  else if(a=='cprep'){navigator.clipboard.writeText(reportText()).then(()=>toast('Report copied')).catch(()=>toast('Select the preview text to copy'))}
+  else if(a=='ccsv'){const rows=[['Ref','Product','Category','Jurisdiction','Stage','Workstream %','Shariah status','Distribution %']].concat(S.mandates.map(m=>[m.id,m.name,m.cat,m.jur,STAGES[m.stage],wsprog(m),SHS[m.sh.st],prog(m)]));navigator.clipboard.writeText(rows.map(r=>r.join(',')).join('\n')).then(()=>toast('CSV copied')).catch(()=>toast('Copy not available here'))}
+});
+document.addEventListener('change',e=>{
+  const t=e.target,a=t.dataset.act,v=t.dataset.v,m=M();
+  if(t.id=='gsel'){S.sel=t.value;S.stageSel=null;render();return}
+  if(!a)return;
+  if(a=='wpart'){m.ws[+v].partner=t.value||null;log('Partner assigned',m.id,WS[+v]+': '+(t.value?pn(t.value):'unassigned'));render()}
+  else if(a=='wst'){const f=WST[m.ws[+v].st];m.ws[+v].st=WST.indexOf(t.value);log('Workstream status',m.id,WS[+v],f,t.value);render()}
+  else if(a=='shst'){const n=SHS.indexOf(t.value);if(n==5&&!m.sh.decision){toast('Record the advisor\'s decision below to mark this complete');render();return}const f=SHS[m.sh.st];m.sh.st=n;log('Shariah review status',m.id,'Status changed',f,t.value);render()}
+  else if(a=='shadv'){m.sh.advisor=t.value;log('Advisor assigned',m.id,t.value);render()}
+  else if(a=='rst'){const f=RGS[m.reg[+v].st];m.reg[+v].st=RGS.indexOf(t.value);log('Regulatory status',m.id,m.reg[+v].doc,f,t.value);render()}
+  else if(a=='rnote'){m.reg[+v].note=t.value}
+  else if(a=='ast'){S.assign[+v].st=t.value;log('Assignment status',S.assign[+v].mid,S.assign[+v].ws,'',t.value);render()}
+  else if(a=='tst'){m.tech[S.techSel]=TECHS.indexOf(t.value);log('Technology status',m.id,TECH[S.techSel][0],'',t.value);render()}
+  else if(a=='fa'){m.fa[+v]=t.checked;log('Admin/custody item',m.id,t.checked?'Reported complete':'Reopened');render()}
+  else if(a=='dchk'){m.dist[+v].done=t.checked;log('Readiness item',m.id,m.dist[+v].n,'',t.checked?'Evidence recorded':'Reopened');render()}
+  else if(a=='dev'){m.dist[+v].ev=t.value}
+  else if(a=='msd'){const x=S.ms.find(z=>z.id==+v);x.done=t.checked;log('Milestone',x.mid,x.t,'',t.checked?'Done':'Reopened');render()}
+  else if(a=='rpar'){S.rep[v]=t.value;render()}
+});
+document.getElementById('gsearch').addEventListener('input',e=>{S.q=e.target.value;if(['mandates','docs','partners','audit'].indexOf(S.view)<0)S.view='mandates';const p=e.target;render();})
+document.addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target.id=='aq'){ask(e.target.value)}});
+render(true);
+</script>
+
+</body>
+</html>
